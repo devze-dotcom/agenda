@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.agenda.refatoracao.exception.ContatoJaExiste;
+import com.agenda.refatoracao.exception.ContatoNaoExiste;
 import com.agenda.refatoracao.model.Contato;
 import com.agenda.refatoracao.repository.ContatoRepository;
 
@@ -26,6 +28,10 @@ public class ContatoService {
             throw new IllegalArgumentException("O Contato não pode ser nulo");
         }
 
+        if (repository.findByEmail(contato.getEmail()) != null) {
+            throw new ContatoJaExiste("O contato ja existe");
+        }
+
         repository.save(contato);
     }
 
@@ -33,15 +39,19 @@ public class ContatoService {
         return repository.findAll();
     }
 
-    public Contato obterPorEmail(String email) { // throws ContatoNaoExiste
+    public Contato obterPorEmail(String email) {
         if (email == null) {
             throw new IllegalArgumentException("O email não pode ser nulo");
+        }
+
+        if (repository.findByEmail(email) == null) {
+            throw new ContatoNaoExiste("O contato não existe");
         }
 
         return repository.findByEmail(email);
     };
 
-    public void atualizar(String email, Contato novoContato) { // throws ContatoNaoExiste, ContatoJaExiste;
+    public void atualizar(String email, Contato novoContato) {
         if (email == null || novoContato == null) {
             throw new IllegalArgumentException("O email ou o contato não podem ser nulos");
         }
@@ -49,7 +59,7 @@ public class ContatoService {
         Contato contatoExistente = repository.findByEmail(email);
 
         if (contatoExistente == null) {
-            throw new IllegalArgumentException("O contato não existe");
+            throw new ContatoNaoExiste("O contato não existe");
         }
 
         String novoEmail = novoContato.getEmail();
@@ -58,7 +68,7 @@ public class ContatoService {
             Contato novoContatoEmail = repository.findByEmail(novoEmail);
 
             if (novoContatoEmail != null) {
-                throw new IllegalArgumentException("O contato ja existe");
+                throw new ContatoJaExiste("O contato ja existe");
 
             }
         }
@@ -70,10 +80,11 @@ public class ContatoService {
         repository.save(novoContato);
     }
 
-    public void remover(String email) { // throws ContatoNaoExiste;
+    public void remover(String email) {
         Contato deletarContato = repository.findByEmail(email);
-        if (deletarContato != null) {
-            repository.delete(deletarContato);
+        if (deletarContato == null) {
+            throw new ContatoNaoExiste("O contato não existe");
         }
+        repository.delete(deletarContato);
     }
 }

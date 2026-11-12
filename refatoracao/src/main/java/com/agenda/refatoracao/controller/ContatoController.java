@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.agenda.refatoracao.exception.ContatoJaExiste;
+import com.agenda.refatoracao.exception.ContatoNaoExiste;
 import com.agenda.refatoracao.model.Contato;
 import com.agenda.refatoracao.service.ContatoService;
 
@@ -28,13 +30,12 @@ public class ContatoController {
 
     @PostMapping("/salvar")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> salvar(Contato contato) // throws ContatoJaExiste
-    {
+    public ResponseEntity<?> salvar(@RequestBody Contato contato) {
         service.salvar(contato);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/contatos")
+    @GetMapping("/{email}")
     public ResponseEntity<Contato> obterPorEmail(@PathVariable String email) {
         Contato novoContato = service.obterPorEmail(email);
         return ResponseEntity.ok(novoContato);
@@ -47,13 +48,13 @@ public class ContatoController {
 
     }
 
-    @PutMapping
-    public ResponseEntity<Void> atualizar (@PathVariable String email, @RequestBody Contato contato) {
+    @PutMapping("/{email}")
+    public ResponseEntity<Void> atualizar(@PathVariable String email, @RequestBody Contato contato) {
         service.atualizar(email, contato);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping 
+    @DeleteMapping("/{email}")
     public ResponseEntity<Void> remover(@PathVariable String email) {
         service.remover(email);
         return ResponseEntity.ok().build();
